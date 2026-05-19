@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import Logo from './Logo'
-import { services } from '../data/services'
+import { directions } from '../data/services'
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
@@ -38,7 +38,6 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto w-full px-6 flex items-center justify-between">
-          {/* Logo + name */}
           <Link to="/" className="flex items-center gap-3" onClick={closeMobile}>
             <Logo className="w-10 h-10" />
             <span className="font-heading text-lg text-text hidden sm:block">
@@ -46,32 +45,35 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-8">
             <div
               className="relative"
               onMouseEnter={() => setServicesOpen(true)}
               onMouseLeave={() => setServicesOpen(false)}
             >
-              <button className="text-sm font-medium text-text-muted hover:text-text transition-colors duration-200 flex items-center gap-1">
-                Услуги
+              <button
+                className="text-sm font-medium text-text-muted hover:text-text transition-colors duration-200 flex items-center gap-1"
+                aria-expanded={servicesOpen}
+                aria-haspopup="true"
+              >
+                Направления
                 <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
 
               {servicesOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-72">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-64">
                   <div className="bg-surface border border-border rounded-2xl p-3 shadow-[0_8px_40px_-12px_rgba(30,77,140,0.12)]">
-                    {services.map((s) => (
+                    {directions.map((d) => (
                       <Link
-                        key={s.slug}
-                        to={`/services/${s.slug}`}
+                        key={d.slug}
+                        to={`/services/${d.slug}`}
                         onClick={() => setServicesOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-text-muted hover:text-text hover:bg-surface-alt transition-colors duration-150"
                       >
-                        <span className="text-xs text-accent font-medium w-5">{s.number}</span>
-                        {s.title}
+                        <span className="text-xs text-accent font-medium w-5">{d.number}</span>
+                        {d.title}
                       </Link>
                     ))}
                   </div>
@@ -91,7 +93,6 @@ export default function Header() {
             </NavLink>
           </nav>
 
-          {/* Phone + burger */}
           <div className="flex items-center gap-4">
             <a
               href="tel:+70001234567"
@@ -100,7 +101,6 @@ export default function Header() {
               +7 (000) 123-45-67
             </a>
 
-            {/* Burger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5"
@@ -113,22 +113,21 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-surface pt-[72px] overflow-y-auto md:hidden">
-          <nav className="px-6 py-8 flex flex-col gap-2">
+          <nav className="px-6 py-8 flex flex-col gap-2" aria-label="Главное меню">
             <p className="text-xs uppercase tracking-[0.15em] text-text-muted mb-2 px-3">
               Направления
             </p>
-            {services.map((s) => (
+            {directions.map((d) => (
               <Link
-                key={s.slug}
-                to={`/services/${s.slug}`}
+                key={d.slug}
+                to={`/services/${d.slug}`}
                 onClick={closeMobile}
                 className="flex items-center gap-4 px-3 py-3 rounded-xl text-lg text-text hover:bg-surface-alt transition-colors"
               >
-                <span className="text-sm text-accent font-medium w-6">{s.number}</span>
-                {s.title}
+                <span className="text-sm text-accent font-medium w-6">{d.number}</span>
+                {d.title}
               </Link>
             ))}
 

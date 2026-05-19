@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import PageWrapper from '../components/PageWrapper'
 import SectionHeading from '../components/SectionHeading'
 import ServiceCard from '../components/ServiceCard'
 import ContactBlock from '../components/ContactBlock'
-import { services } from '../data/services'
+import { directions } from '../data/services'
 
 const facts = [
   { number: '15+', label: 'лет опыта' },
@@ -44,6 +44,100 @@ const whyUs = [
   },
 ]
 
+// Interactive flowing lines that respond to mouse
+function FlowingHero() {
+  const svgRef = useRef(null)
+  const mouseRef = useRef({ x: 0.5, y: 0.5 })
+
+  useEffect(() => {
+    let raf
+    const svg = svgRef.current
+    if (!svg) return
+
+    const paths = svg.querySelectorAll('.flow-path')
+    const update = () => {
+      const mx = mouseRef.current.x
+      const my = mouseRef.current.y
+      paths.forEach((path, i) => {
+        const offset = (i + 1) * 15
+        const cy1 = 200 + (my - 0.5) * offset + Math.sin(Date.now() / (2000 + i * 400)) * 20
+        const cy2 = 300 + (my - 0.5) * offset * 0.7 + Math.cos(Date.now() / (1800 + i * 300)) * 15
+        const cx1 = 300 + (mx - 0.5) * offset
+        const cx2 = 700 + (mx - 0.5) * offset * 0.5
+        path.setAttribute('d', `M-50 ${250 + i * 40} C${cx1} ${cy1}, ${cx2} ${cy2}, 1050 ${260 + i * 30}`)
+      })
+      raf = requestAnimationFrame(update)
+    }
+
+    const onMove = (e) => {
+      const rect = svg.getBoundingClientRect()
+      mouseRef.current = {
+        x: (e.clientX - rect.left) / rect.width,
+        y: (e.clientY - rect.top) / rect.height,
+      }
+    }
+
+    svg.addEventListener('mousemove', onMove)
+    raf = requestAnimationFrame(update)
+    return () => {
+      cancelAnimationFrame(raf)
+      svg.removeEventListener('mousemove', onMove)
+    }
+  }, [])
+
+  return (
+    <svg
+      ref={svgRef}
+      className="absolute inset-0 w-full h-full pointer-events-auto"
+      viewBox="0 0 1000 500"
+      preserveAspectRatio="none"
+      fill="none"
+    >
+      {[0, 1, 2, 3, 4].map((i) => (
+        <path
+          key={i}
+          className="flow-path"
+          d={`M-50 ${250 + i * 40} C300 ${200 + i * 20}, 700 ${300 + i * 15}, 1050 ${260 + i * 30}`}
+          stroke="var(--color-accent)"
+          strokeWidth={1.2 - i * 0.15}
+          opacity={0.12 - i * 0.015}
+          strokeLinecap="round"
+        />
+      ))}
+      {/* Accent dots along the curves */}
+      <circle cx="250" cy="240" r="3" fill="var(--color-accent)" opacity="0.15" />
+      <circle cx="500" cy="270" r="4" fill="var(--color-primary)" opacity="0.08" />
+      <circle cx="750" cy="250" r="2.5" fill="var(--color-accent)" opacity="0.12" />
+    </svg>
+  )
+}
+
+// Decorative section divider — flowing wave
+function WaveDivider() {
+  return (
+    <div className="w-full overflow-hidden -my-px">
+      <svg className="w-full h-16 md:h-24 text-accent/[0.07]" viewBox="0 0 1200 100" preserveAspectRatio="none" fill="none">
+        <path
+          d="M0 60 C200 20, 400 80, 600 50 C800 20, 1000 70, 1200 40"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M0 70 C200 40, 400 90, 600 60 C800 30, 1000 80, 1200 50"
+          stroke="currentColor"
+          strokeWidth="1"
+          opacity="0.5"
+        />
+      </svg>
+    </div>
+  )
+}
+
+const bgDotsStyle = {
+  backgroundImage: 'radial-gradient(circle, var(--color-primary) 1px, transparent 1px)',
+  backgroundSize: '24px 24px',
+}
+
 export default function Home() {
   useEffect(() => {
     document.title = 'Стоматологическая клиника — Современная стоматология бизнес-класса'
@@ -54,16 +148,15 @@ export default function Home() {
       {/* Hero */}
       <section className="min-h-screen flex items-center relative overflow-hidden">
         {/* Background dots */}
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: 'radial-gradient(circle, var(--color-primary) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
+        <div className="absolute inset-0 opacity-[0.04]" style={bgDotsStyle} />
 
-        <div className="max-w-7xl mx-auto w-full px-6 py-32 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative">
-          <div>
+        {/* Interactive flowing lines */}
+        <div className="absolute inset-0 hidden lg:block">
+          <FlowingHero />
+        </div>
+
+        <div className="max-w-7xl mx-auto w-full px-6 py-32 relative z-10">
+          <div className="max-w-2xl">
             <h1 className="font-heading text-5xl sm:text-6xl lg:text-7xl xl:text-[80px] leading-[1.05] text-text mb-6">
               Стоматология,
               <br />
@@ -74,10 +167,10 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4">
               <a
-                href="#services"
+                href="#directions"
                 className="inline-flex items-center gap-2 bg-primary text-white font-medium px-7 py-3.5 rounded-full hover:bg-primary-hover transition-colors duration-200"
               >
-                Узнать о направлениях
+                Направления
               </a>
               <Link
                 to="/contacts"
@@ -85,30 +178,6 @@ export default function Home() {
               >
                 Связаться
               </Link>
-            </div>
-          </div>
-
-          {/* Decorative geometric composition */}
-          <div className="hidden lg:flex items-center justify-center relative h-[400px]">
-            {/* Outer ring */}
-            <div className="absolute w-80 h-80 rounded-full border border-accent/20 animate-pulse" />
-            {/* Middle ring */}
-            <div className="absolute w-60 h-60 rounded-full border border-primary/15" />
-            {/* Inner glow */}
-            <div className="absolute w-40 h-40 rounded-full bg-accent-soft/20" />
-            {/* Crosshair lines */}
-            <svg className="absolute w-80 h-80 text-border" viewBox="0 0 320 320" fill="none" stroke="currentColor" strokeWidth="0.5">
-              <line x1="160" y1="40" x2="160" y2="280" opacity="0.4" />
-              <line x1="40" y1="160" x2="280" y2="160" opacity="0.4" />
-              {/* Corner arcs */}
-              <path d="M100 60 A100 100 0 0 1 260 160" opacity="0.2" />
-              <path d="M60 220 A100 100 0 0 1 220 60" opacity="0.15" />
-            </svg>
-            {/* Center plus icon */}
-            <div className="relative z-10 w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center shadow-[0_8px_40px_-12px_rgba(30,77,140,0.12)]">
-              <svg className="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-              </svg>
             </div>
           </div>
         </div>
@@ -119,6 +188,8 @@ export default function Home() {
           <div className="w-px h-8 bg-border" />
         </div>
       </section>
+
+      <WaveDivider />
 
       {/* About */}
       <section className="py-24 md:py-32">
@@ -151,17 +222,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services */}
-      <section id="services" className="py-24 md:py-32">
+      <WaveDivider />
+
+      {/* Directions */}
+      <section id="directions" className="py-24 md:py-32">
         <div className="max-w-7xl mx-auto px-6">
           <SectionHeading number="02" title="Направления" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {services.map((s, i) => (
-              <ServiceCard key={s.slug} service={s} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {directions.map((d) => (
+              <ServiceCard key={d.slug} direction={d} />
             ))}
           </div>
         </div>
       </section>
+
+      <WaveDivider />
 
       {/* Why us */}
       <section className="py-24 md:py-32">
